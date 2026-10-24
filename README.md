@@ -57,6 +57,7 @@ pytest
 - [项目一页纸](docs/01-one-pager.md)
 - [API 设计稿](docs/02-api-design.md)
 - [90 天执行计划](docs/03-90-day-plan.md)
+- [Git 与 CI 指南](docs/04-git-ci-guide.md)
 
 ## 开发
 
