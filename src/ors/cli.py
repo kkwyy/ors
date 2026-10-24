@@ -61,9 +61,7 @@ def _solve(args: argparse.Namespace) -> int:
 
 def _diagnose(args: argparse.Namespace) -> int:
     model = Model.read(args.model)
-    diagnosis = model.diagnose(
-        DiagnoseOptions(method=args.method, max_time=args.time_limit)
-    )
+    diagnosis = model.diagnose(DiagnoseOptions(method=args.method, max_time=args.time_limit))
     if args.format == "json":
         print(json.dumps(diagnosis.to_dict(), indent=2, ensure_ascii=False))
     else:

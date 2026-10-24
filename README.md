@@ -18,7 +18,7 @@ m.add_constr(x + y <= 5, name="capacity")
 m.set_objective(x + y, sense="min")
 
 r = m.optimize()
-print(r.status)        # Status.INFEASIBLE
+print(r.status)  # Status.INFEASIBLE
 
 d = m.diagnose()
 print(d.summary())
@@ -61,9 +61,14 @@ pytest
 ## 开发
 
 ```bash
-pytest                      # 运行测试
-python -m ors --help        # CLI
+make install        # 创建 .venv 并安装依赖（首次）
+make check          # ruff + mypy + pytest
+make demo           # 运行诊断示例
+pre-commit install  # 启用提交前钩子（一次性）
 ```
+
+CI 在 GitHub Actions 上覆盖 Python 3.10–3.13：`ruff check`、`ruff format --check`、
+`mypy`、`pytest`。Dependabot 每周检查依赖更新。
 
 ## 许可证
 

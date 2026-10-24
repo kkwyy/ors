@@ -72,7 +72,9 @@ class IIS:
     def summary(self) -> str:
         if not self.constraints:
             return "IIS: empty (variable bounds alone are infeasible)"
-        lines = [f"IIS: {len(self.constraints)} constraint(s) [{self.method}, {self.solves} solves]"]
+        lines = [
+            f"IIS: {len(self.constraints)} constraint(s) [{self.method}, {self.solves} solves]"
+        ]
         lines += [f"  - {c.name}: {c.expression()}" for c in self.constraints]
         return "\n".join(lines)
 
@@ -178,8 +180,7 @@ class Diagnosis:
                 for c in self.iis.constraints
             )
         findings = "".join(
-            f"<li><strong>[{escape(f.severity)}] {escape(f.code)}</strong> "
-            f"{escape(f.message)}</li>"
+            f"<li><strong>[{escape(f.severity)}] {escape(f.code)}</strong> {escape(f.message)}</li>"
             for f in self.findings
         )
         return f"""<!doctype html>

@@ -111,9 +111,7 @@ def _build(highspy, model: Model, active_rows: Iterable[int] | None):
     lp.a_matrix_.start_ = starts
     lp.a_matrix_.index_ = indices
     lp.a_matrix_.value_ = values
-    lp.sense_ = (
-        highspy.ObjSense.kMinimize if model.sense == "min" else highspy.ObjSense.kMaximize
-    )
+    lp.sense_ = highspy.ObjSense.kMinimize if model.sense == "min" else highspy.ObjSense.kMaximize
     if any(v.vtype != "continuous" for v in variables):
         lp.integrality_ = [
             highspy.HighsVarType.kContinuous

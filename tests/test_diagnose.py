@@ -65,4 +65,4 @@ def test_report_json_roundtrip(tmp_path):
     diagnosis.report(str(path), format="json")
     text = path.read_text(encoding="utf-8")
     assert "demand" in text
-    assert "\"status\": \"infeasible\"" in text
+    assert '"status": "infeasible"' in text

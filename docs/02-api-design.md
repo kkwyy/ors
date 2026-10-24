@@ -21,7 +21,7 @@ class Status(str, Enum):
     OPTIMAL = "optimal"
     INFEASIBLE = "infeasible"
     UNBOUNDED = "unbounded"
-    INF_OR_UNB = "infeasible_or_unbounded"   # 求解器无法区分
+    INF_OR_UNB = "infeasible_or_unbounded"  # 求解器无法区分
     TIME_LIMIT = "time_limit"
     ITERATION_LIMIT = "iteration_limit"
     NUMERICAL = "numerical"
@@ -40,11 +40,11 @@ import ors
 
 m = ors.Model("schedule")
 x = m.add_var(lb=0, ub=10, name="x")
-y = m.add_vars(3, lb=0, vtype="integer", name="y")   # 返回 list[Var]
+y = m.add_vars(3, lb=0, vtype="integer", name="y")  # 返回 list[Var]
 
 m.add_constr(2 * x + y[0] <= 10, name="capacity")
 m.add_constr(x - y[1] >= 2, name="demand")
-m.add_constr(x.eq(3), name="fixed_x")                # 等式用 .eq()，避免覆盖 __eq__
+m.add_constr(x.eq(3), name="fixed_x")  # 等式用 .eq()，避免覆盖 __eq__
 
 m.set_objective(x + 2 * y[0] + 3 * y[1], sense="min")
 ```
@@ -109,12 +109,12 @@ class Result:
 ```python
 @dataclass
 class Diagnosis:
-    status: DiagStatus                  # infeasible / unbounded / ok / numerical
+    status: DiagStatus  # infeasible / unbounded / ok / numerical
     iis: IIS | None
     relaxation: Relaxation | None
     certificate: Certificate | None
     findings: list[Finding]
-    explanation: str | None             # LLM 生成，可能为 None
+    explanation: str | None  # LLM 生成，可能为 None
     elapsed: float
     backend: str
 
@@ -128,10 +128,10 @@ class Diagnosis:
 ```python
 @dataclass
 class IIS:
-    constraints: list[ConstraintRef]    # 原始约束引用，含名字和表达式
-    bounds: list[BoundRef]              # 参与冲突的变量界
-    minimal: bool                       # 启发式结果可能不保证最小
-    method: str                         # "deletion" | "additive" | "elastic"
+    constraints: list[ConstraintRef]  # 原始约束引用，含名字和表达式
+    bounds: list[BoundRef]  # 参与冲突的变量界
+    minimal: bool  # 启发式结果可能不保证最小
+    method: str  # "deletion" | "additive" | "elastic"
     solves: int
 ```
 
@@ -142,10 +142,10 @@ class IIS:
 ```python
 @dataclass
 class Relaxation:
-    changes: list[Change]               # (ref, 方向, 最小改动量, 单位成本)
+    changes: list[Change]  # (ref, 方向, 最小改动量, 单位成本)
     total_violation: float
     objective_penalty: float
-    method: str                         # "elastic" | "min_edit"
+    method: str  # "elastic" | "min_edit"
 ```
 
 语义：**在保持其余约束不变的前提下，最小化总违反量**。不承诺"业务上最合理"，只承诺"数学上最小"。
@@ -157,9 +157,9 @@ class Relaxation:
 class Certificate:
     kind: Literal["farkas", "unbounded_ray", "optimal", "none"]
     vector: list[float]
-    residual: float                     # 验证残差
+    residual: float  # 验证残差
     verified: bool
-    checker: str                        # 例如 "ors.verify.farkas@1"
+    checker: str  # 例如 "ors.verify.farkas@1"
     model_hash: str
 ```
 
@@ -183,7 +183,7 @@ JSON 形式（存证用）：
 @dataclass
 class Finding:
     severity: Literal["error", "warning", "info"]
-    code: str          # "BIG_M" | "DUPLICATE_ROW" | "TINY_COEF" | "FREE_VAR" | ...
+    code: str  # "BIG_M" | "DUPLICATE_ROW" | "TINY_COEF" | "FREE_VAR" | ...
     message: str
     refs: list[Ref]
 ```
@@ -202,7 +202,7 @@ class DiagnoseOptions:
     max_solves: int = 1000
     include_bounds: bool = True
     explain: bool = False
-    explain_model: str | None = None     # "local" | "cloud" | 具体模型名
+    explain_model: str | None = None  # "local" | "cloud" | 具体模型名
     tolerance: float = 1e-9
 ```
 
