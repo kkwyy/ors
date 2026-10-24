@@ -1,11 +1,11 @@
 """ors — explainable optimization."""
 
 from .diagnose import (
+    IIS,
     DiagnoseOptions,
     Diagnosis,
     DiagnosisError,
     Finding,
-    IIS,
     diagnose,
 )
 from .model import Constraint, ConstraintSpec, LinearExpr, Model, ModelError, Var
@@ -14,13 +14,13 @@ from .result import Result, SolveOptions, Status
 __version__ = "0.0.1"
 
 __all__ = [
+    "IIS",
     "Constraint",
     "ConstraintSpec",
     "DiagnoseOptions",
     "Diagnosis",
     "DiagnosisError",
     "Finding",
-    "IIS",
     "LinearExpr",
     "Model",
     "ModelError",
@@ -28,6 +28,6 @@ __all__ = [
     "SolveOptions",
     "Status",
     "Var",
-    "diagnose",
     "__version__",
+    "diagnose",
 ]

@@ -7,8 +7,8 @@ the way to diagnostics, no hidden global state.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 Number = int | float
 
@@ -23,7 +23,7 @@ class ModelError(Exception):
         self.hint = hint
 
 
-def _as_expr(value: object) -> "LinearExpr":
+def _as_expr(value: object) -> LinearExpr:
     if isinstance(value, LinearExpr):
         return value
     if isinstance(value, Var):
@@ -33,7 +33,7 @@ def _as_expr(value: object) -> "LinearExpr":
     raise TypeError(f"cannot use {type(value).__name__} in a linear expression")
 
 
-def _format_linear(coeffs: dict["Var", float], const: float = 0.0) -> str:
+def _format_linear(coeffs: dict[Var, float], const: float = 0.0) -> str:
     terms: list[str] = []
     for var in sorted(coeffs, key=lambda v: v.index):
         a = coeffs[var]
@@ -63,7 +63,7 @@ def _format_linear(coeffs: dict["Var", float], const: float = 0.0) -> str:
 class Var:
     """A decision variable. Hashable by identity; never override ``__eq__``."""
 
-    __slots__ = ("index", "name", "lb", "ub", "vtype")
+    __slots__ = ("index", "lb", "name", "ub", "vtype")
 
     def __init__(
         self,
@@ -83,35 +83,35 @@ class Var:
         return f"Var({self.name!r})"
 
     # -- expression building -------------------------------------------------
-    def __mul__(self, other: Number) -> "LinearExpr":
+    def __mul__(self, other: Number) -> LinearExpr:
         if isinstance(other, (int, float)) and not isinstance(other, bool):
             return LinearExpr({self: float(other)})
         return NotImplemented  # type: ignore[return-value]
 
     __rmul__ = __mul__
 
-    def __neg__(self) -> "LinearExpr":
+    def __neg__(self) -> LinearExpr:
         return LinearExpr({self: -1.0})
 
-    def __add__(self, other: object) -> "LinearExpr":
+    def __add__(self, other: object) -> LinearExpr:
         return LinearExpr({self: 1.0}) + other
 
-    def __radd__(self, other: object) -> "LinearExpr":
+    def __radd__(self, other: object) -> LinearExpr:
         return self.__add__(other)
 
-    def __sub__(self, other: object) -> "LinearExpr":
+    def __sub__(self, other: object) -> LinearExpr:
         return LinearExpr({self: 1.0}) - other
 
-    def __rsub__(self, other: object) -> "LinearExpr":
+    def __rsub__(self, other: object) -> LinearExpr:
         return _as_expr(other) - LinearExpr({self: 1.0})
 
-    def __le__(self, other: object) -> "ConstraintSpec":
+    def __le__(self, other: object) -> ConstraintSpec:
         return ConstraintSpec(LinearExpr({self: 1.0}), "<=", _as_expr(other))
 
-    def __ge__(self, other: object) -> "ConstraintSpec":
+    def __ge__(self, other: object) -> ConstraintSpec:
         return ConstraintSpec(LinearExpr({self: 1.0}), ">=", _as_expr(other))
 
-    def eq(self, other: object) -> "ConstraintSpec":
+    def eq(self, other: object) -> ConstraintSpec:
         """Equality constraint. Use this instead of ``==`` (which stays identity)."""
         return ConstraintSpec(LinearExpr({self: 1.0}), "==", _as_expr(other))
 
@@ -127,7 +127,7 @@ class LinearExpr:
         self.coeffs = {v: float(a) for v, a in self.coeffs.items() if float(a) != 0.0}
         self.const = float(self.const)
 
-    def __add__(self, other: object) -> "LinearExpr":
+    def __add__(self, other: object) -> LinearExpr:
         o = _as_expr(other)
         merged = dict(self.coeffs)
         for var, a in o.coeffs.items():
@@ -136,16 +136,16 @@ class LinearExpr:
 
     __radd__ = __add__
 
-    def __sub__(self, other: object) -> "LinearExpr":
+    def __sub__(self, other: object) -> LinearExpr:
         return self + (-_as_expr(other))
 
-    def __rsub__(self, other: object) -> "LinearExpr":
+    def __rsub__(self, other: object) -> LinearExpr:
         return _as_expr(other) - self
 
-    def __neg__(self) -> "LinearExpr":
+    def __neg__(self) -> LinearExpr:
         return LinearExpr({v: -a for v, a in self.coeffs.items()}, -self.const)
 
-    def __mul__(self, other: Number) -> "LinearExpr":
+    def __mul__(self, other: Number) -> LinearExpr:
         if not isinstance(other, (int, float)) or isinstance(other, bool):
             return NotImplemented  # type: ignore[return-value]
         k = float(other)
@@ -153,18 +153,18 @@ class LinearExpr:
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other: Number) -> "LinearExpr":
+    def __truediv__(self, other: Number) -> LinearExpr:
         if not isinstance(other, (int, float)) or isinstance(other, bool) or other == 0:
             raise ModelError("division by zero or non-scalar")
         return self * (1.0 / float(other))
 
-    def __le__(self, other: object) -> "ConstraintSpec":
+    def __le__(self, other: object) -> ConstraintSpec:
         return ConstraintSpec(self, "<=", _as_expr(other))
 
-    def __ge__(self, other: object) -> "ConstraintSpec":
+    def __ge__(self, other: object) -> ConstraintSpec:
         return ConstraintSpec(self, ">=", _as_expr(other))
 
-    def eq(self, other: object) -> "ConstraintSpec":
+    def eq(self, other: object) -> ConstraintSpec:
         return ConstraintSpec(self, "==", _as_expr(other))
 
     def __repr__(self) -> str:
@@ -342,7 +342,7 @@ class Model:
 
     # -- io ------------------------------------------------------------------
     @classmethod
-    def read(cls, path: str) -> "Model":
+    def read(cls, path: str) -> Model:
         from .backend import highs_backend
 
         return highs_backend.read_model(path)

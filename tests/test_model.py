@@ -1,5 +1,6 @@
-import ors
 import pytest
+
+import ors
 
 
 def test_expression_coefficients():

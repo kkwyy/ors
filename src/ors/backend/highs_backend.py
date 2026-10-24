@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import math
 import time
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 
-from ..model import Constraint, LinearExpr, Model, ModelError, Var
+from ..model import LinearExpr, Model, ModelError
 from ..result import Result, SolveOptions, Status
 
 
@@ -226,7 +226,7 @@ def read_model(path: str) -> Model:
     )
 
     nrows = lp.num_row_
-    row_coeffs: list[dict[int, float]] = [dict() for _ in range(nrows)]
+    row_coeffs: list[dict[int, float]] = [{} for _ in range(nrows)]
     matrix = lp.a_matrix_
     if matrix.format_ == highspy.MatrixFormat.kColwise:
         for j in range(lp.num_col_):
