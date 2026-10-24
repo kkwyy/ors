@@ -19,7 +19,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 
-dependencies = ["numpy>=1.24"]
+dependencies = ["numpy>=2.2.6"]
 
 [project.optional-dependencies]
 highs = ["highspy>=1.7"]
