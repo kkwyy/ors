@@ -1,5 +1,6 @@
 """ors — explainable optimization."""
 
+from .certificate import Certificate, CertificateTerm, VerifyResult, verify_certificate
 from .diagnose import (
     IIS,
     DiagnoseOptions,
@@ -10,11 +11,12 @@ from .diagnose import (
 )
 from .model import Constraint, ConstraintSpec, LinearExpr, Model, ModelError, Var
 from .result import Result, SolveOptions, Status
-
-__version__ = "0.0.1"
+from .version import __version__
 
 __all__ = [
     "IIS",
+    "Certificate",
+    "CertificateTerm",
     "Constraint",
     "ConstraintSpec",
     "DiagnoseOptions",
@@ -28,6 +30,8 @@ __all__ = [
     "SolveOptions",
     "Status",
     "Var",
+    "VerifyResult",
     "__version__",
     "diagnose",
+    "verify_certificate",
 ]

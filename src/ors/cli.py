@@ -7,6 +7,7 @@ import json
 import sys
 
 from . import __version__
+from .certificate import Certificate, verify_certificate
 from .diagnose import DiagnoseOptions
 from .model import Model, ModelError
 from .result import SolveOptions, Status
@@ -36,15 +37,17 @@ def _build_parser() -> argparse.ArgumentParser:
     diag.add_argument("--time-limit", type=float, default=60.0)
     diag.add_argument("--method", choices=["auto", "deletion", "additive"], default="auto")
     diag.add_argument("--report", metavar="PATH", default=None)
+    diag.add_argument("--certificate", metavar="PATH", default=None)
     diag.add_argument("--format", choices=["text", "json"], default="text")
 
     diff = sub.add_parser("diff", help="compare two model versions (not implemented)")
     diff.add_argument("old")
     diff.add_argument("new")
 
-    verify = sub.add_parser("verify", help="verify a certificate (not implemented)")
+    verify = sub.add_parser("verify", help="verify a Farkas certificate against a model")
     verify.add_argument("certificate")
     verify.add_argument("model")
+    verify.add_argument("--allow-hash-mismatch", action="store_true")
 
     return parser
 
@@ -70,7 +73,26 @@ def _diagnose(args: argparse.Namespace) -> int:
         fmt = "json" if args.report.endswith(".json") else "html"
         diagnosis.report(args.report, format=fmt)
         print(f"report written to {args.report}")
+    if args.certificate:
+        if diagnosis.certificate is None:
+            print("no certificate available", file=sys.stderr)
+        else:
+            diagnosis.certificate.to_json(args.certificate)
+            print(f"certificate written to {args.certificate}")
     return 1 if diagnosis.status == Status.INFEASIBLE.value else 0
+
+
+def _verify(args: argparse.Namespace) -> int:
+    model = Model.read(args.model)
+    certificate = Certificate.from_json(args.certificate)
+    check = verify_certificate(model, certificate, allow_hash_mismatch=args.allow_hash_mismatch)
+    if certificate.model_hash:
+        print(f"model hash: {'match' if check.hash_match else 'MISMATCH'}")
+    print(f"verified:  {check.verified}")
+    print(f"reason:    {check.reason}")
+    print(f"residual:  {check.residual:.3e}")
+    print(f"value:     {check.value:.6g}")
+    return 0 if check.verified else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -81,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
             return _solve(args)
         if args.command == "diagnose":
             return _diagnose(args)
+        if args.command == "verify":
+            return _verify(args)
     except ModelError as exc:
         print(f"error: {exc}", file=sys.stderr)
         if exc.hint:

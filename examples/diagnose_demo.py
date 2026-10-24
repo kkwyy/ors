@@ -26,8 +26,13 @@ def main() -> None:
         print(diagnosis.summary())
         print()
         print(diagnosis.why("demand"))
+        if diagnosis.certificate is not None:
+            print()
+            print(diagnosis.certificate.summary())
+            diagnosis.certificate.to_json("demo-cert.json")
         diagnosis.report("demo-report.html")
         print("\nreport: demo-report.html")
+        print("certificate: demo-cert.json")
 
 
 if __name__ == "__main__":

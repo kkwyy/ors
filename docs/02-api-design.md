@@ -154,14 +154,26 @@ class Relaxation:
 
 ```python
 @dataclass
+class CertificateTerm:
+    kind: Literal["constraint_upper", "constraint_lower", "bound_upper", "bound_lower"]
+    name: str  # 约束名或变量名
+    multiplier: float  # >= 0
+
+
+@dataclass
 class Certificate:
-    kind: Literal["farkas", "unbounded_ray", "optimal", "none"]
-    vector: list[float]
-    residual: float  # 验证残差
+    kind: Literal["farkas"]  # 未来：unbounded_ray, optimal
+    terms: list[CertificateTerm]
+    value: float  # sum lambda_k * b_k，必须 < 0
+    residual: float  # max |sum lambda_k * a_k|
     verified: bool
-    checker: str  # 例如 "ors.verify.farkas@1"
-    model_hash: str
+    checker: str  # "ors.verify.farkas@1"
+    model_hash: str  # sha256 of the model
 ```
+
+语义：把每条不等式写成 `a_k x <= b_k`（`>=` 取反，等式拆成两条），
+证书给出非负乘子 `lambda_k`，使得 `sum lambda_k a_k = 0` 且
+`sum lambda_k b_k < 0`——即 `0 <= 负数`，矛盾，故模型不可行。
 
 JSON 形式（存证用）：
 
@@ -169,12 +181,33 @@ JSON 形式（存证用）：
 {
   "kind": "farkas",
   "version": 1,
+  "checker": "ors.verify.farkas@1",
   "model_hash": "sha256:...",
-  "vector": [0.0, 1.0, -0.5],
-  "residual": 1.2e-12,
+  "value": -2.5,
+  "residual": 0.0,
   "verified": true,
-  "checker": "ors.verify.farkas@1"
+  "terms": [
+    {"kind": "constraint_upper", "name": "CAP", "multiplier": 0.5},
+    {"kind": "constraint_lower", "name": "DEM", "multiplier": 0.5}
+  ]
 }
+```
+
+验证不调用求解器，只做稀疏线性代数：
+
+```python
+from ors import Certificate, verify_certificate
+
+cert = Certificate.from_json("cert.json")
+check = verify_certificate(model, cert)
+assert check.verified, check.reason
+```
+
+CLI：
+
+```bash
+ors diagnose model.mps --certificate cert.json
+ors verify cert.json model.mps
 ```
 
 ### 5.4 模型体检

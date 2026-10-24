@@ -133,6 +133,14 @@ def solve(
     active_rows: Iterable[int] | None = None,
 ) -> Result:
     opts = options or SolveOptions()
+    for var in model.variables:
+        if var.lb > var.ub:
+            return Result(
+                status=Status.INFEASIBLE,
+                runtime=0.0,
+                backend="precheck",
+                message=f"variable {var.name!r} has lb={var.lb:g} > ub={var.ub:g}",
+            )
     highspy = _highspy()
     start = time.perf_counter()
 
